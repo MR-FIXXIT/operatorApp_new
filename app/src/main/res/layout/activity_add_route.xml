@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:id="@+id/llMain"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+
+            <TextView
+                android:id="@+id/tvSource"
+                android:layout_width="340dp"
+                android:layout_height="62dp"
+                android:layout_gravity="center"
+                android:background="@color/text_view_ideal"
+                android:ems="10"
+                android:gravity="center"
+                android:hint="Source Stop"
+                android:textColorHint="@color/text_view_hint_ideal"
+                android:textSize="21sp" />
+
+            <TextView
+                android:id="@+id/tvInter"
+                android:layout_width="340dp"
+                android:layout_height="62dp"
+                android:background="@color/text_view_ideal"
+                android:ems="10"
+                android:gravity="center"
+                android:layout_gravity="center"
+                android:hint="Intermediate Stop"
+                android:textColorHint="@color/text_view_hint_ideal"
+                android:textSize="21sp" />
+
+
+
+            <TextView
+                android:id="@+id/tvEnd"
+                android:layout_width="340dp"
+                android:layout_height="62dp"
+                android:background="@color/text_view_ideal"
+                android:ems="10"
+                android:gravity="center"
+                android:layout_gravity="center"
+                android:hint="End Stop"
+                android:textColorHint="@color/text_view_hint_ideal"
+                android:textSize="21sp" />
+
+        </LinearLayout>
+
+    </ScrollView>
+
+    <Button
+        android:id="@+id/btnAdd"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:text="+"
+        android:textSize="30sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+    </Button>
+
+    <Button
+        android:id="@+id/btnSave"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:text="Save"
+        android:textSize="30sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/btnAdd"
+        app:layout_constraintHorizontal_bias="0.494"
+        app:layout_constraintStart_toEndOf="@+id/btnDelete" />
+
+    <Button
+        android:id="@+id/btnDelete"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginBottom="16dp"
+        android:text="-"
+        android:textSize="30sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+    </Button>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
