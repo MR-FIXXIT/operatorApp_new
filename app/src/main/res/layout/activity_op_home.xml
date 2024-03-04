@@ -6,29 +6,40 @@
     android:layout_height="match_parent">
 
     <Button
-        android:id="@+id/btnAddConductor"
-        android:layout_width="wrap_content"
+        android:id="@+id/btnAddConductor_opHome"
+        android:layout_width="190dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="36dp"
+        android:layout_marginBottom="12dp"
         android:text="Add Conductor"
-        app:layout_constraintBottom_toTopOf="@+id/btnAddRoute"
+        app:layout_constraintBottom_toTopOf="@+id/btnAddRoute_opHome"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent" />
 
     <Button
-        android:id="@+id/btnAddRoute"
-        android:layout_width="wrap_content"
+        android:id="@+id/btnAddRoute_opHome"
+        android:layout_width="190dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="44dp"
+        android:layout_marginBottom="12dp"
         android:text="Add Route"
-        app:layout_constraintBottom_toTopOf="@+id/btnSignOut_ophome"
+        app:layout_constraintBottom_toTopOf="@+id/btnSignOut_opHome"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
     <Button
-        android:id="@+id/btnSignOut_ophome"
-        android:layout_width="wrap_content"
+        android:id="@+id/btnMap_opHome"
+        android:layout_width="190dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="Map"
+        app:layout_constraintBottom_toTopOf="@+id/btnAddConductor_opHome"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/btnSignOut_opHome"
+        android:layout_width="190dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="52dp"
         android:text="Sign Out"

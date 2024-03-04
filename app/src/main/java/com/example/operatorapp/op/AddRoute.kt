@@ -1,22 +1,30 @@
 package com.example.operatorapp.op
 
 import android.app.Activity
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import android.util.Log
 import android.view.Gravity
+import android.view.View
 import android.widget.Button
 import android.widget.LinearLayout
+import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.operatorapp.R
+import com.example.operatorapp.RouteDistance
 import com.example.operatorapp.ViewStops
 import com.google.firebase.firestore.FirebaseFirestore
-import java.security.MessageDigest
+import com.mapbox.mapboxsdk.style.layers.Property.VISIBILITY
+import com.mapbox.mapboxsdk.style.layers.Property.VISIBLE
 
 class AddRoute : AppCompatActivity() {                                              /* the way everything handled in here is a mess
                                                                                      pls don't touch anything*/
+    private lateinit var distance: String
     private lateinit var llMain: LinearLayout
     private lateinit var tvSource: TextView
     private lateinit var tvEnd: TextView
@@ -25,6 +33,7 @@ class AddRoute : AppCompatActivity() {                                          
     private lateinit var btnDelete: Button
     private lateinit var btnSave: Button
     private lateinit var newTV: TextView
+    private lateinit var pbLoad: ProgressBar
     private var indexInLayout: Int = 0
     private lateinit var dynamicTextViews: MutableList<TextView>
     private lateinit var stopIdInRoute: MutableList<String?>
@@ -32,6 +41,18 @@ class AddRoute : AppCompatActivity() {                                          
     private var selectedStop: ArrayList<String?>? = null
     private var count: Int = 0
     private val VIEW_STOPS_REQUEST_CODE = 1
+
+    private val broadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            intent?.let {
+                if (it.action == "ROUTE_DISTANCE_ACTION") {
+                    distance = it.getDoubleExtra("distance", 0.0).toString()
+                    Log.i("my_tag", "Distance : $distance")
+                    uploadDB()
+                }
+            }
+        }
+    }
 
     private fun init(){
         llMain = findViewById(R.id.llMain)
@@ -41,9 +62,13 @@ class AddRoute : AppCompatActivity() {                                          
         btnAdd = findViewById(R.id.btnAdd)
         btnDelete = findViewById(R.id.btnDelete)
         btnSave = findViewById(R.id.btnSave)
+        pbLoad = findViewById(R.id.pbLoad)
         dynamicTextViews = mutableListOf()
         stopIdInRoute = MutableList(3){""}
         dynamicTVStopId = MutableList(5){""}
+
+        registerReceiver(broadcastReceiver, IntentFilter("ROUTE_DISTANCE_ACTION"))
+
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -103,14 +128,18 @@ class AddRoute : AppCompatActivity() {                                          
             }else{
                 removeEmpty()
                 stopIdInRoute.addAll(2, dynamicTVStopId)
-                uploadDB()
-                resetAll()
+                pbLoad.visibility = View.VISIBLE
+                calculateRouteDistance()
             }
-
-            Log.i("india", "route : $stopIdInRoute")
         }
     }
 
+    private fun calculateRouteDistance() {
+        val intent = Intent(this, RouteDistance::class.java)
+        Log.i("my_tag", "$stopIdInRoute")
+        intent.putExtra("listData", ArrayList(stopIdInRoute))
+        startService(intent)
+    }
     private fun startViewStopsActivity(textViewTag: String) {
         val intent = Intent(this, ViewStops::class.java)
         intent.putExtra("true", true)
@@ -214,9 +243,9 @@ class AddRoute : AppCompatActivity() {                                          
             llMain.removeView(tv)
         }
 
-        stopIdInRoute.clear()
-        dynamicTVStopId.clear()
-        dynamicTextViews.clear()
+        dynamicTextViews = mutableListOf()
+        stopIdInRoute = MutableList(3){""}
+        dynamicTVStopId = MutableList(5){""}
     }
 
     private fun isAnyTVEmpty(): Boolean{
@@ -233,19 +262,28 @@ class AddRoute : AppCompatActivity() {                                          
         val db = FirebaseFirestore.getInstance()
 
         val routeId = generateRouteId(stopIdInRoute.first(), stopIdInRoute.last() )
-        val routeData = hashMapOf<String, Any>()
 
+        val routeData = hashMapOf<String, Any>()
         for(i in stopIdInRoute.indices){
             routeData["stop${i+1}"] = stopIdInRoute[i] ?: ""
         }
 
-        db.collection("Route").document(routeId).set(routeData)
+
+        val map = HashMap<String, Any>()
+        map["stopID"] = routeData
+        map["routeDistance"] = distance
+
+
+
+        db.collection("RouteInfo").document(routeId).set(map)
             .addOnSuccessListener {
-                // Document was successfully written
                 Toast.makeText(this, "Route data uploaded to Firestore", Toast.LENGTH_SHORT).show()
+
+                //resetting everything is important , other wise it will crash the app if tried to add a new route
+                pbLoad.visibility = View.INVISIBLE
+                resetAll()
             }
             .addOnFailureListener { e ->
-                // Handle any errors that occurred while writing the document
                 Toast.makeText(this, "Error uploading route data: ${e.message}", Toast.LENGTH_SHORT).show()
             }
     }
@@ -268,7 +306,10 @@ class AddRoute : AppCompatActivity() {                                          
         }
     }
 
-
+    override fun onDestroy() {
+        super.onDestroy()
+        unregisterReceiver(broadcastReceiver)
+    }
 }
 
 

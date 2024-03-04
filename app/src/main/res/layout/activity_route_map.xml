@@ -9,32 +9,10 @@
     tools:context=".Map">
 
     <com.mapbox.mapboxsdk.maps.MapView
-        android:id="@+id/mapView"
+        android:id="@+id/mapView_routeMap"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         mapbox:mapbox_cameraZoom="12">
-
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fabUserLocation_routeMap"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="end|bottom"
-            android:layout_margin="10dp"
-            android:tint="@android:color/white"
-            app:backgroundTint="@color/colorPrimary"
-            app:srcCompat="@drawable/location_crosshairs" />
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fabLocationSearch_routeMap"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:tint="@android:color/white"
-            android:layout_gravity="end|bottom"
-            android:layout_marginEnd="11dp"
-            android:layout_marginBottom="80dp"
-            app:backgroundTint="@color/colorPrimary"
-            app:srcCompat="@android:drawable/ic_search_category_default" />
 
 
         <TextView
@@ -62,13 +40,6 @@
             android:layout_marginTop="670dp"
             />
 
-        <Button
-            android:id="@+id/btnDisplayRoute_routeMap"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Display route"
-            android:layout_gravity="bottom|center"
-            />
 
     </com.mapbox.mapboxsdk.maps.MapView>
 

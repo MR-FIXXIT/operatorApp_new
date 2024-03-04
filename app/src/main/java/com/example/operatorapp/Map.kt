@@ -1,18 +1,21 @@
 package com.example.operatorapp
 
 import android.Manifest
+import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.view.animation.LinearInterpolator
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.res.ResourcesCompat
+import com.google.firebase.Firebase
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.gson.JsonObject
 import com.mapbox.android.core.permissions.PermissionsListener
@@ -25,6 +28,9 @@ import com.mapbox.geojson.Feature
 import com.mapbox.geojson.FeatureCollection
 import com.mapbox.geojson.Point
 import com.mapbox.mapboxsdk.Mapbox
+import com.mapbox.mapboxsdk.annotations.IconFactory
+import com.mapbox.mapboxsdk.annotations.Marker
+import com.mapbox.mapboxsdk.annotations.MarkerOptions
 import com.mapbox.mapboxsdk.camera.CameraPosition
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLng
@@ -74,6 +80,13 @@ class Map : AppCompatActivity(), OnMapReadyCallback,
     private var st: String? = null
     var startLocation: String? = ""
     var endLocation: String? = ""
+    private lateinit var firestore: FirebaseFirestore
+    private var previousLocation: LatLng? = null
+    private var currentLocation: LatLng? = null
+    private lateinit var busLoc: LatLng
+    private var bus: Marker? = null
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -89,19 +102,19 @@ class Map : AppCompatActivity(), OnMapReadyCallback,
 
     private fun init(){
         mapView = findViewById<View>(R.id.mapView) as MapView
-        fabUserLocation = findViewById(R.id.fabUserLocation)
-        fabLocationSearch = findViewById(R.id.fabLocationSearch)
-        tvDistance = findViewById(R.id.distanceView)
-        tvS = findViewById(R.id.tvS)
-        tvD = findViewById(R.id.tvD)
-        btnDisplayRoute = findViewById(R.id.btnDisplayRoute)
+        fabUserLocation = findViewById(R.id.fabUserLocation_routeMap)
+        fabLocationSearch = findViewById(R.id.fabLocationSearch_routeMap)
+        tvDistance = findViewById(R.id.distanceView_routeMap)
+        tvS = findViewById(R.id.tvS_routeMap)
+        tvD = findViewById(R.id.tvD_routeMap)
+        btnDisplayRoute = findViewById(R.id.btnDisplayRoute_routeMap)
         db = FirebaseFirestore.getInstance()
         stopId = mutableListOf()
         stops = mutableListOf()
+        firestore = FirebaseFirestore.getInstance()
     }
 
     private fun moveToUserLoc() {
-        // Check if mapboxMap and locationComponent are not null
         fabUserLocation.setOnClickListener {
             val lastLocation = mapboxMap.locationComponent.lastKnownLocation
             if (lastLocation != null) {
@@ -122,6 +135,85 @@ class Map : AppCompatActivity(), OnMapReadyCallback,
                     drawRoute(stops[0], stops[1])
                 }
             }
+        }
+    }
+
+    private fun getBusLoc(){
+        firestore.collection("userLocations").document("89")
+            .addSnapshotListener{ snapshot, exception ->
+                if (exception != null) {
+                    Log.e("Firestore", "Listen failed", exception)
+                    return@addSnapshotListener
+                }
+
+                if (snapshot != null && snapshot.exists()) {
+                    val lat = snapshot.getDouble("latitude")
+                    val long = snapshot.getDouble("longitude")
+                    val status = snapshot.getString("status")
+
+                    if(lat != null && long != null){
+                        busLoc = LatLng(lat, long)
+                        updateMarkerPosition(busLoc, status)
+                        Log.i("my_tag", "lat: $lat long: $long")
+                    }else {
+                        Log.e("Firestore", "One or both fields are missing")
+                    }
+                } else {
+                    Log.d("Firestore", "Current data: null")
+                }
+            }
+    }
+
+    private fun updateMarkerPosition(location: LatLng, status: String?) {
+        if(bus == null){
+            val busPosDrawable = ResourcesCompat.getDrawable(resources, R.drawable.bus_position_symbol, null)
+            val busPosIcon = IconFactory.getInstance(this).fromBitmap(BitmapUtils.getBitmapFromDrawable(busPosDrawable)!!)
+            bus = mapboxMap.addMarker(
+                MarkerOptions()
+                    .position(location)
+                    .icon(busPosIcon)
+                    .title("BUS")
+            )
+
+        } else {
+            if(status == "inactive"){
+                hideBusMarker()
+                return
+            }
+            updateMarkerPositionAnimation(location)
+        }
+    }
+
+    private fun hideBusMarker() {
+        mapboxMap.removeMarker(bus!!)
+
+        bus = null
+    }
+
+    private fun updateMarkerPositionAnimation(newLocation: LatLng) {
+        Log.i("my_tag", "marker update fun called")
+
+        previousLocation = currentLocation
+        currentLocation = newLocation
+        Log.i("my_tag", "previous location: $previousLocation")
+        Log.i("my_tag", "current location: $currentLocation")
+
+        previousLocation?.let { prevLocation ->
+            val interpolator = LinearInterpolator()
+            val valueAnimator = ValueAnimator.ofFloat(0f, 1f)
+            valueAnimator.duration = 1000 // Animation duration in milliseconds
+            valueAnimator.addUpdateListener { animator ->
+                val fraction = animator.animatedFraction
+                val lat = (currentLocation!!.latitude - prevLocation.latitude) * fraction + prevLocation.latitude
+                val lng = (currentLocation!!.longitude - prevLocation.longitude) * fraction + prevLocation.longitude
+                val animatedPosition = LatLng(lat, lng)
+
+                bus!!.position = animatedPosition
+                mapboxMap.updateMarker(bus!!)
+
+            }
+            valueAnimator.interpolator = interpolator
+            valueAnimator.start()
         }
     }
 
@@ -161,7 +253,7 @@ class Map : AppCompatActivity(), OnMapReadyCallback,
 
                     if (stopId.indexOf(documentId) == stopId.size - 1) {
                         stops = stop
-                        callback.invoke() // Callback to indicate that the Firestore query is complete
+                        callback.invoke()
                     }
                 }
                 .addOnFailureListener {
@@ -219,7 +311,8 @@ class Map : AppCompatActivity(), OnMapReadyCallback,
             initSearchFab()
             moveToUserLoc()
             addUserLocations()
-            fetchRoute()
+            getBusLoc()
+//            fetchRoute()
 
             val drawable = ResourcesCompat.getDrawable(
                 resources, R.drawable.ic_baseline_location_on_24, null
@@ -477,7 +570,6 @@ class Map : AppCompatActivity(), OnMapReadyCallback,
         }
     }
 
-    // Add the mapView lifecycle to the activity's lifecycle methods
     public override fun onResume() {
         super.onResume()
         mapView.onResume()

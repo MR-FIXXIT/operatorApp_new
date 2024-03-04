@@ -13,11 +13,14 @@
         android:theme="@style/Theme.OperatorApp"
         tools:targetApi="31">
         <activity
+            android:name=".toadd.RouteMap"
+            android:exported="false" />
+        <activity
             android:name=".Map"
             android:exported="false" />
         <activity
             android:name=".ViewStops"
-            android:exported="false" />
+            android:exported="false"     />
         <activity
             android:name=".op.AddConductor"
             android:exported="false" />
@@ -31,17 +34,20 @@
             android:name=".op.OpHome"
             android:exported="false" />
         <activity
+            android:name=".op.OpSignup"
+            android:exported="false" />
+        <activity
             android:name=".op.OpSignin"
-            android:exported="true" >
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".op.OpSignup"
-            android:exported="false" />
+
+
+        <service android:name=".RouteDistance" />
 
     </application>
 

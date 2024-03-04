@@ -78,7 +78,6 @@ class ViewStops : AppCompatActivity(), MyAdapter.OnItemClickListener {
             val resultIntent = intent.putStringArrayListExtra("selectedStop", ArrayList(nameIntent))
             setResult(Activity.RESULT_OK, resultIntent)
             finish()
-
         }
     }
 }
